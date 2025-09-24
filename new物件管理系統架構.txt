@@ -1,0 +1,664 @@
+Vue.js 專題架構  增加物件重新整理不會消失物件管理系統
+
+網址: https://aquamarine-meerkat-6961ca.netlify.app/
+
+專題主要功能模組
+前端框架：Vue 3 + Vite
+樣式框架：Tailwind CSS
+主要功能：新增、編輯、刪除、搜尋物件
+資料存放：前端暫存 (可延伸串接後端 API)
+介面設計：卡片式彩色 UI，支援自動換行
+
+專案目錄：
+src/
+ ├── App.vue (主介面)
+ ├── main.js (入口檔案)
+ ├── main.css 
+ ├── store.js 
+ ├── assets/ (資源資料夾)
+ ├── components/
+      ├── ObjectList.vue (物件清單)
+      ├── ObjectForm.vue (新增/編輯表單)
+ ├── styles.css (Tailwind 設定)
+ ├── styles.css (Tailwind 設定)
+ ├── styles.css (Tailwind 設定)
+ ├── styles.css (Tailwind 設定)
+ ├── styles.css (Tailwind 設定)
+
+核心功能：
+物件新增：輸入名稱與描述
+物件編輯：修改既有物件資訊
+物件刪除：移除指定物件
+物件搜尋：依名稱即時篩選
+介面美化：彩色卡片，自動換行，限制行數
+
+------------------------------------------------------------------------
+
+專題需求設定
+
+假設你的專題是「物件管理系統」，功能需求可以先簡單定義：
+
+顯示物件列表
+
+新增物件
+
+編輯物件
+
+刪除物件
+
+可以存資料到本地（初期使用 LocalStorage 模擬資料庫）
+
+
+- id (自動產生)
+- 名稱
+- 類別
+- 描述
+- 數量
+
+步驟 1：建立專案
+
+安裝 Node.js（建議 18 以上）
+
+開啟終端機，建立 Vue 3 專案：
+
+
+npm create vite@latest vue-object-project
+
+選擇：
+
+Project name: vue-object-project
+
+Framework: Vue
+
+yes
+
+yes
+
+Variant: Vue 3 + JavaScript（或 TypeScript）
+
+進入資料夾並安裝套件：
+
+cd vue-object-project
+npm install
+
+npm run dev
+
+打開瀏覽器，應該可以看到 Vite 的預設頁面。
+
+
+ChatGPT 說：
+
+太好了！我們可以在現有物件管理系統基礎上，加上排版美化與進階功能，讓頁面更像專題作品。
+
+我建議用 Tailwind CSS 做前端樣式快速美化，並加上：
+
+卡片列表或漂亮表格
+
+搜尋/篩選物件
+
+分頁（可選，資料少可以先不做）
+
+按鈕、表單樣式美化
+
+簡單顏色、間距調整
+
+npm install -D tailwindcss @tailwindcss/postcss postcss
+npm install -D tailwindcss postcss autoprefixer
+npm install -D tailwindcss@latest @tailwindcss/postcss@latest postcss@latest autoprefixer@latest
+
+會生成：
+
+tailwind.config.js
+
+postcss.config.js
+
+----------------------------------------------------------
+在 src/main.css（如果沒有就新建）：
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+----------------------------------------------------------
+
+src/main.js
+
+import { createApp } from "vue";
+import App from "./App.vue";
+import "./main.css";
+
+createApp(App).mount("#app");
+
+
+----------------------------------------------------------
+
+style.css
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+.card {
+  padding: 2em;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+
+
+---------------------------------------------------------
+
+vite.config.js
+
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [vue()],
+})
+
+----------------------------------------------------------
+
+
+src/store.js
+
+import { reactive } from "vue";
+
+export const store = reactive({
+  objects: JSON.parse(localStorage.getItem("objects")) || [],
+
+  addObject(obj) {
+    obj.id = Date.now();
+    this.objects.push(obj);
+    this.save();
+  },
+
+  updateObject(updatedObj) {
+    const index = this.objects.findIndex((o) => o.id === updatedObj.id);
+    if (index !== -1) {
+      this.objects[index] = updatedObj;
+      this.save();
+    }
+  },
+
+  deleteObject(id) {
+    this.objects = this.objects.filter((o) => o.id !== id);
+    this.save();
+  },
+
+  save() {
+    localStorage.setItem("objects", JSON.stringify(this.objects));
+  },
+});
+
+
+----------------------------------------------------------
+
+App.vue
+
+<template>
+  <div id="app" class="app-container">
+    <h1 class="title">物件管理系統</h1>
+    <ObjectList />
+  </div>
+</template>
+
+<script>
+import ObjectList from './components/ObjectList.vue'
+
+export default {
+  name: 'App',
+  components: { ObjectList }
+}
+</script>
+
+<style>
+.app-container {
+  min-height: 100vh;
+  background: linear-gradient(to right, #3a7bd5, #00d2ff); /* 藍色漸層 */
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.title {
+  text-align: center;
+  color: #fff;
+  font-size: 32px;
+  margin-bottom: 30px;
+  font-weight: bold;
+}
+</style>
+
+
+
+
+---------------------------------------------------
+
+ObjectForm.vue
+
+<template>
+  <div class="form-card">
+    <h3>{{ editItem ? '✏️ 編輯物件' : '➕ 新增物件' }}</h3>
+    <form @submit.prevent="handleSubmit">
+      <label>名稱：</label>
+      <input v-model="form.name" required class="input-box" />
+
+      <label>描述：</label>
+      <textarea v-model="form.description" required class="input-box"></textarea>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-green">💾 儲存</button>
+        <button type="button" @click="$emit('cancel')" class="btn btn-red">❌ 取消</button>
+      </div>
+    </form>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'ObjectForm',
+  props: ['editItem'],
+  data() {
+    return {
+      form: this.editItem ? { ...this.editItem } : { name: '', description: '' }
+    }
+  },
+  watch: {
+    editItem: {
+      immediate: true,
+      handler(newVal) {
+        this.form = newVal ? { ...newVal } : { name: '', description: '' }
+      }
+    }
+  },
+  methods: {
+    handleSubmit() {
+      this.$emit('save', this.form)
+    }
+  }
+}
+</script>
+
+<style>
+.form-card {
+  background: #f8f9fa;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+h3 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.input-box {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+</style>
+
+
+
+
+
+---------------------------------------------------
+
+ObjectList.vue
+
+<template>
+  <div class="list-container">
+    <div class="top-bar">
+      <input 
+        v-model="search" 
+        placeholder="🔍 搜尋物件" 
+        class="search-box"
+      />
+      <button @click="toggleForm" class="btn btn-green">
+        ➕ 新增物件
+      </button>
+    </div>
+
+    <!-- 表單 -->
+    <ObjectForm 
+      v-if="showForm" 
+      :editItem="editItem" 
+      @save="saveObject" 
+      @cancel="cancelForm"
+    />
+
+    <!-- 物件列表 -->
+    <div class="card-list">
+      <div v-for="(obj, index) in filteredObjects" :key="index" class="card">
+        <p><strong>名稱：</strong>{{ obj.name }}</p>
+        <p><strong>描述：</strong>{{ obj.description }}</p>
+        <div class="actions">
+          <button @click="editObject(index)" class="btn btn-blue">✏️ 編輯</button>
+          <button @click="deleteObject(index)" class="btn btn-red">🗑 刪除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import ObjectForm from './ObjectForm.vue'
+
+export default {
+  name: 'ObjectList',
+  components: { ObjectForm },
+  data() {
+    return {
+      objects: JSON.parse(localStorage.getItem('objects')) || [],
+      search: '',
+      showForm: false,
+      editIndex: null,
+      editItem: null
+    }
+  },
+  computed: {
+    filteredObjects() {
+      return this.objects.filter(obj =>
+        obj.name.toLowerCase().includes(this.search.toLowerCase())
+      )
+    }
+  },
+  methods: {
+    toggleForm() {
+      this.showForm = true
+      this.editItem = null
+      this.editIndex = null
+    },
+    saveObject(obj) {
+      if (this.editIndex !== null) {
+        this.objects[this.editIndex] = obj
+      } else {
+        this.objects.push(obj)
+      }
+      this.updateStorage()
+      this.showForm = false
+    },
+    editObject(index) {
+      this.editItem = { ...this.objects[index] }
+      this.editIndex = index
+      this.showForm = true
+    },
+    deleteObject(index) {
+      this.objects.splice(index, 1)
+      this.updateStorage()
+    },
+    cancelForm() {
+      this.showForm = false
+      this.editItem = null
+      this.editIndex = null
+    },
+    updateStorage() {
+      localStorage.setItem('objects', JSON.stringify(this.objects))
+    }
+  }
+}
+</script>
+
+<style>
+.list-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: #ffffffcc;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.search-box {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #3a7bd5;
+  border-radius: 8px;
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+.card-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  transition: transform 0.2s;
+}
+.btn:hover {
+  transform: scale(1.05);
+}
+.btn-green {
+  background: #28a745;
+}
+.btn-blue {
+  background: #007bff;
+}
+.btn-red {
+  background: #dc3545;
+}
+</style>
+
+
+
+
+------------------------------------------------
+
+tailwind.config.cjs
+
+
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./index.html",
+    "./src/**/*.{vue,js,ts}"
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+
+
+-------------------------------------------------------
+
+postcss.config.cjs
+
+
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  }
+}
+
+-------------------------------------------------------
+
+src/main.js
+
+import { createApp } from 'vue'
+import App from './App.vue'
+import './main.css'   // <-- 引入 Tailwind CSS
+
+createApp(App).mount('#app')
+
+
+-------------------------------------------------------
+
+package.json
+
+{
+  "name": "vue-object-project",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.21"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.13",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.13",
+    "vite": "npm:rolldown-vite@7.1.12"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@7.1.12"
+  }
+}
+
+
+-------------------------------------------------------
+
+
+你這個專案是 Vue 3 + Vite 架構，所以要打包輸出靜態網頁到一個資料夾，只要用 Vite 的 build 指令：
+
+npm run build
+
+執行後流程：
+
+會在專案根目錄生成一個 dist/ 資料夾。
+
+裡面包含 index.html、壓縮過的 JS、CSS 檔案。
+
+這就是可以直接丟到網站伺服器（例如 Nginx、Apache、GitHub Pages）的檔案。
+
+如果想在本地測試打包後的網站：
+
+npm run preview
+
+
+預設會開在 http://localhost:4173。
+
+部署方式
+
+一般網頁伺服器 (Apache / Nginx) → 把 dist/ 整包上傳到伺服器即可。
+
+GitHub Pages → 可以用 gh-pages 套件部署，或直接丟 dist/ 到 gh-pages 分支。
+
+Netlify / Vercel → 在建置設定輸入 npm run build，發佈資料夾設 dist。
+
+-------------------------------------------------------
+
+執行程式指令 
+
+npm run dev
+
+網址: https://subtle-axolotl-2e4d31.netlify.app/
+
+
