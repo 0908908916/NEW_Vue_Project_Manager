@@ -1,10 +1,10 @@
 <template>
   <div class="list-card">
-    <h2 class="title">📦 物件列表</h2>
+    <h2 class="title">📦 任務排程列表</h2>
 
     <!-- 新增區塊 -->
     <div class="form-row">
-      <input v-model="newName" type="text" placeholder="輸入物件名稱" class="input" />
+      <input v-model="newName" type="text" placeholder="輸入任務名稱" class="input" />
       <input v-model="newDesc" type="text" placeholder="輸入描述" class="input" />
       <input v-model="newDate" type="date" class="input" />
       <input v-model="newTime" type="time" class="input" />
@@ -40,7 +40,7 @@
       </li>
     </ul>
 
-    <p v-if="objects.length === 0" class="empty">尚未新增任何物件</p>
+    <p v-if="objects.length === 0" class="empty">尚未新增任何任務</p>
   </div>
 </template>
 
