@@ -1,6 +1,6 @@
 Vue.js 專題架構  增加物件重新整理不會消失任務管理系統網站
 
-網址: 
+網址: https://bejewelled-crepe-9fc596.netlify.app/
 
 專題主要功能模組
 前端框架：Vue 3 + Vite
@@ -605,5 +605,6 @@ Netlify / Vercel → 在建置設定輸入 npm run build，發佈資料夾設 di
 npm run dev
 
 網址: https://subtle-axolotl-2e4d31.netlify.app/
+
 
 
